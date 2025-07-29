@@ -6,21 +6,20 @@ class Post(models.Model):
     text = models.TextField()
     image = models.ImageField(upload_to='posts/images',blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    post_like = models.IntegerField(verbose_name='Лайк', default=0)
 
 class Comment(models.Model):
     author = models.ForeignKey(User, verbose_name='Автор комментария', on_delete=models.CASCADE)
-    text = models.TextField (max_length=1000)
+    text = models.TextField (max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comment')
 
 class Like(models.Model):
     Like_choices = (
-        ("like", 1),
-        ("none", 0)
+        ("like", "like"),
+        ("none", "none")
     )
 
     like_user = models.ForeignKey(User, verbose_name='Автор лайка', on_delete=models.CASCADE)
-    for_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='like')
+    for_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
     like_status = models.CharField(choices=Like_choices, default=None)
     time_update = models.DateTimeField(auto_now=True)

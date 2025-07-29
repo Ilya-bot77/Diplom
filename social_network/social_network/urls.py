@@ -20,16 +20,24 @@ from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework.routers import DefaultRouter
 
-from posts.views import PostViewSet, CommentViewSet, like_function
+from posts.views import PostViewSet, CommentViewSet, LikeViewSet
+
+# маршруты для работы с постами
 
 r = DefaultRouter()
 r.register('post', PostViewSet)
-r.register('comment', CommentViewSet)
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('post/<int:post_id>/<int:is_like>', like_function)
+
+# маршруты для работы с комментариями
+
+    path('post/<int:post_id>/comment/', CommentViewSet.as_view({'post': 'create'})),
+    path('post/<int:post_id>/comment/<int:comment_id>/', CommentViewSet.as_view({'put': 'update', 'delete': 'destroy'})),
+
+# маршруты для установки/снятия like
+
+    path('post/<int:post_id>/like/', LikeViewSet.as_view({'post': 'create', 'patch': 'patch'}))
 ] + r.urls
 
 if settings.DEBUG:
