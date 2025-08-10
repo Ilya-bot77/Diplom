@@ -4,7 +4,7 @@ from posts.models import Post, Comment, Like
 # Сериализатор для комментариев к постам
 
 class CommentSerializer(serializers.ModelSerializer):
-     class Meta:
+    class Meta:
         model = Comment
         fields = ['id', 'author', 'text', 'created_at', 'post']
 
@@ -21,7 +21,3 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = ['id', 'user', 'text', 'image', 'created_at', 'comment', 'likes_count']
         read_only_fields = ['user']
-
-
-
-
