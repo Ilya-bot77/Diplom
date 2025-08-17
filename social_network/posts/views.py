@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, ModelViewSet
@@ -12,6 +13,7 @@ class PostViewSet(ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = [IsOwnerOrReadOnly]
 
+
 # Функция для автоматической подстановки автора поста в поле user при создании поста.
 
     def perform_create(self, serializer):
@@ -21,6 +23,7 @@ class PostViewSet(ModelViewSet):
 
 class CommentViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
+
 
 # Создание комментария к посту при запросе POST по адресу: post/<int:post_id>/comment/
 
@@ -36,7 +39,7 @@ class CommentViewSet(ViewSet):
                 return Response(ser.data)
             return Response(ser.errors)
         except Post.DoesNotExist:
-            return Response({'message': 'Пост не найден'})
+            raise ValidationError(['Пост не найден'])
 
 # Изменение комментария при запросе PUT по адресу: post/<int:post_id>/comment/<int:comment_id>/
 
@@ -54,9 +57,9 @@ class CommentViewSet(ViewSet):
                     return Response(ser.data)
                 return Response(ser.errors)
             else:
-                return Response({'message': 'Комментарий не Ваш'})
+                raise ValidationError(['Комментарий не Ваш, редактирование запрещено!'])
         except Comment.DoesNotExist:
-            return Response({'message': 'Комментарий не найден'})
+            raise ValidationError(['Комментарий не найден!'])
 
 # Удаление комментария при запросе DELETE по адресу: post/<int:post_id>/comment/<int:comment_id>/
 
@@ -66,10 +69,10 @@ class CommentViewSet(ViewSet):
             if comm.author_id == self.request.user.id:
                 comm.delete()
             else:
-                return Response({'message': 'Комментарий не Ваш'})
+                raise ValidationError(['Комментарий не Ваш, удаление запрещено!'])
             return Response({'message': 'Комментарий удален'})
         except Comment.DoesNotExist:
-            return Response({'message': 'Комментарий не найден'})
+            raise ValidationError(['Комментарий не найден!'])
 
 # Класс для работы с лайками
 
@@ -87,13 +90,13 @@ class LikeViewSet(ViewSet):
             post = Post.objects.get(id=post_id)
             old_like = Like.objects.filter(like_user=self.request.user, for_post=post)
             if old_like:
-                return Response({'message': "Like установлен ранее"})
+                raise ValidationError(['Like установлен ранее!'])
             else:
                 new_like = Like(like_user=self.request.user, for_post=post, like_status='like')
                 new_like.save()
                 return Response({'message':"Like установлен"})
         except Post.DoesNotExist:
-            return Response({'message': 'Пост не найден'})
+            raise ValidationError(['Пост не найден'])
 
 # Установка like, если был none и установка none, если был like.
 # Like изменяет свой статус при PATCH запросе по адресу: post/<int:post_id>/like/
@@ -112,6 +115,6 @@ class LikeViewSet(ViewSet):
                     old_like.save()
                     return Response({'message': "Like установлен"})
             except Like.DoesNotExist:
-                return Response({'message': 'Likes не установлен'})
+                raise ValidationError(['Likes не установлен!'])
         except Post.DoesNotExist:
-            return Response({'message': 'Пост не найден'})
+            raise ValidationError(['Пост не найден'])
